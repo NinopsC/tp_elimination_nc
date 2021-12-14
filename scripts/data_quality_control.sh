@@ -1,0 +1,1 @@
+Check the quality using fastqc: pas le time dsl
