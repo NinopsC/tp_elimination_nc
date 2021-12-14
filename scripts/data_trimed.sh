@@ -2,7 +2,9 @@
 
 mkdir -p intermediary_results/trim_data/
 # -p = si le dossier est deja cree, pas de bug, on utilise ce dossier
+#fichier fastq nettoye
 mkdir -p intermediary_results/report_trimming/
+#nous dit "j'ai enleve tant de % de la seq"
 
 for FASTQ_GZ_FILES in data/fastq_files/*gz
 do
