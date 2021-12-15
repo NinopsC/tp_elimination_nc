@@ -1,13 +1,13 @@
-sample_ID	sample_name	age	timing	elimination	de_analysis
-1cell_rep1	1c 2	1c	before	no	no
-1cell_rep2	1c 3	1c	before	no	no
-2cells_rep1	2c 2	2c	before	no	no
-2cells_rep2	2c 3	2c	before	no	no
-4cells_rep1	4c 1	4c	during	yes	no
-4cells_rep2	4c 3	4c	during	yes	no
-8cells_rep1	8c 1	8c	during	yes	yes
-8cells_rep2	8c 2	8c	during	yes	yes
-8cells5h_rep1	8c+5 2	8c_5	after	no	yes
-8cells5h_rep2	8c+5 3	8c_5	after	no	yes
-8cells7h_rep1	8c+7 1	8c_7	after	no	no
-8cells7h_rep2	8c+7 4	8c_7	after	no	no
+sample_ID	sample_name	age	timing	elimination	de_analysis	de_analysis2
+1cell_rep1	1c 2	1c	before	no	no	no
+1cell_rep2	1c 3	1c	before	no	no	no
+2cells_rep1	2c 2	2c	before	no	no	yes
+2cells_rep2	2c 3	2c	before	no	no	yes
+4cells_rep1	4c 1	4c	during	yes	no	yes
+4cells_rep2	4c 3	4c	during	yes	no	yes
+8cells_rep1	8c 1	8c	during	yes	yes	no
+8cells_rep2	8c 2	8c	during	yes	yes	no
+8cells5h_rep1	8c+5 2	8c_5	after	no	yes	no
+8cells5h_rep2	8c+5 3	8c_5	after	no	yes	no
+8cells7h_rep1	8c+7 1	8c_7	after	no	no	no
+8cells7h_rep2	8c+7 4	8c_7	after	no	no	no
