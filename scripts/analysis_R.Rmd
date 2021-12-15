@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-### Count matrix analysis
+# Count matrix analysis
 
 ## Build the coldata (metadata)
 
@@ -49,7 +49,7 @@ txi.kallisto
 
 ## Differential expression analysis
 
-# Build the DESeq2 object
+### Build the DESeq2 object
 
 ```{r}
 library(DESeq2)
@@ -59,12 +59,12 @@ dds <- DESeq(dds)
 vsd <- vst(dds, blind=FALSE)
 ```
 
-# Principal component analysis
+### Principal component analysis
 
 ```{r}
 plotPCA(vsd, intgroup=c("age"))
 ```
-## Further analysis
+### Further analysis
 
 ```{r}
 res <- results(dds)
@@ -111,7 +111,89 @@ summary(res)
 
 Maintenant, on aimerait bien en savoir plus sur nos gènes différentiellement exprimés.
 
+####Prise en main des outils d'analyse
+
+Fonction plot_counts pour afficher l'expression des genes :
+
 ```{r}
-plotCounts(dds, gene="mbelarig2944", intergroup="age")
+plot_counts <- function(X) {
+count_df <- counts(dds, normalized=T)
+count_dfl = count_df %>% as.data.frame() %>%  rownames_to_column("gene_ID") %>% pivot_longer(-gene_ID,names_to = "sample_ID", values_to = "norm_counts")
+
+
+df_tmp = subset(count_dfl, gene_ID %in% X) %>% left_join(sampleTable)
+
+df_tmp <- df_tmp %>% mutate(age = factor(age, levels = unique(age)),
+                            gene_ID = factor(gene_ID,levels=X))
+
+
+ggplot(df_tmp, aes(x=age, y = norm_counts, col = age)) + theme_bw() +
+  geom_point() +
+  facet_wrap(~gene_ID, scales = "free_y" ) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+}
+```
+
+Fonction pour récupérer les annotations des transcrits depuis Wormbase :
+
+```{r}
+#BiocManager::install("biomaRt") # only one time
+library(biomaRt)
+mart <- useMart("parasite_mart", dataset = "wbps_gene", host = "https://parasite.wormbase.org", port = 443)
+
+genes_annotation <- getBM(mart = mart,
+                          filters = c("species_id_1010"),
+                          value = list("mebelaprjeb30104"),
+                          attributes = c("wbps_gene_id",
+                                         "caelegprjna13758_gene_name",
+                                         "caelegprjna13758_homolog_ensembl_peptide",
+                                         "interpro_id",
+                                         "interpro_short_description")
+)
+#2 premieres colonnes : nom du gene et proteine homologue chez C.elegans
+#interpro = base de donnees de domaines proteiques
+#3eme et 4eme colonnes : identifiant et description des domaines proteiques
+```
+
+Visualiser les résultats (mais pas tout, parce que les gènes annotés sont beaucoup trop nombreux) :
+
+```{r}
+genes_annotation[1:15,]
+#1:15 indique qu'on veut les 15 premieres lignes,
+```
+Ok, le code fonctionne bien. 
+
+
+#### Analyse 1
+
+On cherche les gènes tel que leur expression différentielle soit significative, et qui sont uprégulés pendant l'élimination.
+
+```{r fig.height=14, fig.width=14}
+genes_list_1 = subset(res_df, padj < 0.0005 & baseMean > 10 & log2FoldChange > 0)  %>% arrange (padj)
+# subset: on applique des filtres dans certaines colonnes pour recuperer seulement certains transcrits, on obtient l'objet gene_list_1
+genes_list_1
+plot_counts(genes_list_1$gene_ID[1:40])
+#on affiche cet objet avec la fonction plot_counts
+```
+
+```{r}
+de_genes_with_annot_1 <- subset(genes_annotation, wbps_gene_id %in% genes_list_1$gene_ID)
+#de = differential expression
+#pour savoir a quoi notre subset de gènes correspond, on recupere dans notre grosse table d’annotation les genes qui sont dans notre liste
+de_genes_with_annot_1
+```
+
+Chercher par mot-clé de domaine protéique dans notre liste :
+
+```{r}
+toMatch = c("exonuclease", "transposase", "helicase")
+exo_transpo_heli_de_genes = de_genes_with_annot_1[grep(paste(toMatch,collapse="|"), de_genes_with_annot_1$interpro_short_description, ignore.case = T),]
+
+#grep = cherche un pattern dans une chaîne de caractère
+#| : je cherche ou exonuclease, ou transposase, ou helicase
+
+exo_transpo_heli_de_genes
+
+plot_counts(unique(exo_transpo_heli_de_genes$wbps_gene_id))
 ```
 
