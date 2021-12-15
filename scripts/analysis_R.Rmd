@@ -1,0 +1,53 @@
+---
+title: "TP NGS"
+author: "Nina"
+date: "12/15/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Count matrix analysis
+
+## Build the coldata (metadata)
+
+```{r}
+library(tidyverse)
+
+sampleTable = read_delim("metadata.tsv") %>% as.data.frame()
+rownames(sampleTable) = sampleTable$sample_ID
+sampleTable
+```
+## Import data with tximport
+
+```{r}
+library(tximport)
+
+dir <- "/home/rstudio/mydatalocal/tp_elimination_nc/results/quantification/"
+samples <- list.dirs(dir, full.names = F) 
+samples <- samples[samples != ""] # remove "." directory
+
+samples_names <- rownames(sampleTable)
+
+files <- file.path(dir, samples_names, "abundance.h5")
+names(files) <- samples_names
+files[!file.exists(files)]
+
+txi.kallisto.tmp <- tximport(files[1], type = "kallisto", txOut = TRUE)
+
+transcript_names <- rownames(txi.kallisto.tmp$abundance)
+tx2gene <- data.frame(tx=transcript_names,
+                  gene=gsub(".t[0-9]*","",transcript_names))
+txi.kallisto <- tximport(files, type = "kallisto", tx2gene = tx2gene)
+```
+
+```{r}
+txi.kallisto
+```
+
+## Differential expression analysis
+
+# Build the DESeq2 object
+
