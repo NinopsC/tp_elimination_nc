@@ -72,11 +72,15 @@ Running a PCA analysis to visualize what separates our data: we obtain a scatter
 plotPCA(vsd, intgroup=c("age"))
 ```
 As expected, we obtain:
-- a time curve (axis 1: organization of the data according to the timing before/during/after elimination)
-- a separation of the "elimination" samples from the others (axis 2)
-- a close proximity between the duplicates.
+- a close proximity between the duplicates highlighting the replicability of the results from samples of the same age
+- a time curve differentiating samples according to the developmental state (axis 1: organization of the data according to the timing before/during/after elimination), evidencing that the higher data dispersion is due to developmental processes
+- a separation of the "elimination" samples from the others (along the axis 2), indicating that genome elimination is linked to a differential gene expression.
 
 ### Further analysis
+
+We want to compare gene expression during genome elimination VS before or after elimination.
+
+The results are presented in a plot with each dot being a gene. The LogFoldChange in the ordinate axis represents the intensity of differential expression between the 2 conditions (during elimination / in absence of elimination). Dots above the LogFoldChange=0 line are the genes up-regulated during genome elimination (down-regulated genes are under the 0 line), and the blue dots have a significant p-value.
 
 ```{r}
 res <- results(dds)
@@ -86,13 +90,10 @@ res <- results(dds)
 resultsNames(dds)
 ```
 
-On compare l'expression génique pendant l'élimination VS avant ou après l'élimination. Donc sur notre plot, les gènes au-dessus de la ligne sont up-régulés pendant l'élimination.
-
 ```{r}
 plotMA(res, ylim=c(-30,30))
 ```
-Comment identifier ces gènes exprimés différentiellement ?
-Avec ce tableau, on a les résultats du plot organisés en tableau (baseMean = abscisse, log2FoldCHange = ordonnée...).
+Now, we want to identify these differentially expressed genes. To do so, we organize the plot results in a table.
 
 ```{r}
 res_df <- as.data.frame(res) %>%rownames_to_column("gene_ID")
@@ -100,32 +101,34 @@ head(res_df)
 #head : permet de voir les 1eres infos
 ```
 
-Maintenant, on essaie d'isoler les gènes répartis sur les lignes up/downrégulées.
+Then, we can try to isolate significant up- or down-regulated genes.
 
-D'abord, les downrégulés les + extrêmes :
+For instance, to isolate the most down-regulated genes, we can use the following subset function:
 
 ```{r}
 subset(res_df, log2FoldChange < -20 & baseMean > 10 & padj < 0.05)
 #padj : p-value ajustee (points bleus significatifs)
 ```
 
-Ensuite, les up-régulés les + extrêmes :
+We can also isolate the most up-regulated genes:
 
 ```{r}
 subset(res_df, log2FoldChange > 20 & baseMean > 10 & padj < 0.05)
 ```
 
-Petit résumé de notre expression génique :
+To sum up the differential gene expression that occurs during genome elimination, we can use the summary function:
 
 ```{r}
 summary(res)
 ```
 
-Maintenant, on aimerait bien en savoir plus sur nos gènes différentiellement exprimés.
+Out of 16875 genes, we obtain 1172 (6.9%) up-regulated genes and 490 (2.9%) down-regulated genes.
 
-####Prise en main des outils d'analyse
+How could we acquire more information about these differentially expressed genes?
 
-Fonction plot_counts pour afficher l'expression des genes :
+####Picking up analysis tools
+
+Plot_counts function to display gene expression:
 
 ```{r}
 plot_counts <- function(X) {
@@ -146,7 +149,7 @@ ggplot(df_tmp, aes(x=age, y = norm_counts, col = age)) + theme_bw() +
 }
 ```
 
-Fonction pour récupérer les annotations des transcrits depuis Wormbase :
+Function to get the transcripts annotations from WormBase:
 
 ```{r}
 #BiocManager::install("biomaRt") # only one time
@@ -162,21 +165,19 @@ genes_annotation <- getBM(mart = mart,
                                          "interpro_id",
                                          "interpro_short_description")
 )
-#2 premieres colonnes : nom du gene et proteine homologue chez C.elegans
-#interpro = base de donnees de domaines proteiques
-#3eme et 4eme colonnes : identifiant et description des domaines proteiques
+#2 first columns: homologue gene and protein names in C.elegans
+#interpro: database of protein domains
+#3rd and 4th columns: ID and description of protein domains
 ```
 
-Visualiser les résultats (mais pas tout, parce que les gènes annotés sont beaucoup trop nombreux) :
+To visualize the results (but not all of them, because annotated genes are too numerous):
 
 ```{r}
 genes_annotation[1:15,]
-#1:15 indique qu'on veut les 15 premieres lignes,
+#1:15 indicates that we want the first 15 rows
 ```
-Ok, le code fonctionne bien. 
 
-
-#### Analyse 1
+#### Analysis 1
 
 On cherche les gènes tel que leur expression différentielle soit significative, et qui sont uprégulés pendant l'élimination.
 
