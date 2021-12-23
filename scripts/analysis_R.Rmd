@@ -9,9 +9,11 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Count matrix analysis
+# Mesorhabditis Belari genome elimination - Count matrix analysis using R
 
 ## Build the coldata (metadata)
+
+Creation of a coldata table (text file .tsv) gathering the samples metadata: ID, name, age, timing (before/during/after elimination), elimination (yes/no), and 2 columns for differential expression analysis (see below).
 
 ```{r}
 library(tidyverse)
@@ -20,6 +22,7 @@ sampleTable = read_delim("metadata.tsv") %>% as.data.frame()
 rownames(sampleTable) = sampleTable$sample_ID
 sampleTable
 ```
+
 ## Import data with tximport
 
 ```{r}
@@ -42,7 +45,7 @@ tx2gene <- data.frame(tx=transcript_names,
                   gene=gsub(".t[0-9]*","",transcript_names))
 txi.kallisto <- tximport(files, type = "kallisto", tx2gene = tx2gene)
 ```
-
+Visualization of the count matrix (columns: samples, rows: transcripts)
 ```{r}
 txi.kallisto
 ```
@@ -50,6 +53,8 @@ txi.kallisto
 ## Differential expression analysis
 
 ### Build the DESeq2 object
+
+Goal: build a DDS object including the normalized count matrix, coldata, and experimental design.
 
 ```{r}
 library(DESeq2)
@@ -61,9 +66,16 @@ vsd <- vst(dds, blind=FALSE)
 
 ### Principal component analysis
 
+Running a PCA analysis to visualize what separates our data: we obtain a scatter plot in 2 dimensions (axes: 2 principal components that best disperse the data, with the largest variance).
+
 ```{r}
 plotPCA(vsd, intgroup=c("age"))
 ```
+As expected, we obtain:
+- a time curve (axis 1: organization of the data according to the timing before/during/after elimination)
+- a separation of the "elimination" samples from the others (axis 2)
+- a close proximity between the duplicates.
+
 ### Further analysis
 
 ```{r}
