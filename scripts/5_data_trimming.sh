@@ -1,10 +1,10 @@
-# Use of fastp to clean the data
+# Trim the raw data using fastp
 
 mkdir -p intermediary_results/trim_data/
-# -p = si le dossier est deja cree, pas de bug, on utilise ce dossier
-#fichier fastq nettoye
+#creation of a new directory "trim_data" in the directory "intermediary_results" in which will be the trimed fastq data
+# -p = if the directory has already been created, it is directly used
 mkdir -p intermediary_results/report_trimming/
-#nous dit "j'ai enleve tant de % de la seq"
+#creation of a new directory "trim_data" in "intermediary_results" in which will be the information "% of the sequence has been removed"
 
 for FASTQ_GZ_FILES in data/fastq_files/*gz
 do
@@ -28,7 +28,3 @@ do
     --json ${OUT_REPORTS_PREFIX}_fastp.json \
     --report_title ${FASTQ_GZ_PREFIX}
 done
-
-#on coupe nos reads a 80pb pcq apres la qlite est moins bonne
-#normal de pas detecter d adaptateur pr les reads: on les a pas sequence, le sequenceur a fait le tri
-

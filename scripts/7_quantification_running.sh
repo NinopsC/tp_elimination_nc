@@ -1,3 +1,5 @@
+#Quantification/mapping using Kallisto
+
 mkdir -p results/quantification/
 
 INDEX=results/intermediary_results/quantification/index_belari/mesorhabditis_belari.index
@@ -23,6 +25,6 @@ do
                  -o ${OUT_QUANT_PREFIX} \
                  ${TRIM_FASTQ_GZ_FILE}
 done
-#single: specifier qu'on a du single end
-#SD : standard deviation
-#l:on seq des 2 cotes du fragment, et qd on map les CDS on estime la taille entre 2. Pr pvoir faire une boucle, on fait la moyenne pour tous les fragments.
+#single = specify that the data are single end
+#SD = standard deviation
+#bias = correct the GC rates

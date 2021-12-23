@@ -1,0 +1,3 @@
+#Aggregate the mapping reports using multiQC to visualize the number of reads, the mapping %...
+
+multiqc -f results/quantification/ -o results/multiqc_report_quantification/
