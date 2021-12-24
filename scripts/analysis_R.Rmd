@@ -98,22 +98,7 @@ Now, we want to identify these differentially expressed genes. To do so, we orga
 ```{r}
 res_df <- as.data.frame(res) %>%rownames_to_column("gene_ID")
 head(res_df)
-#head : permet de voir les 1eres infos
-```
-
-Then, we can try to isolate significant up- or down-regulated genes.
-
-For instance, to isolate the most down-regulated genes, we can use the following subset function:
-
-```{r}
-subset(res_df, log2FoldChange < -20 & baseMean > 10 & padj < 0.05)
-#padj : p-value ajustee (points bleus significatifs)
-```
-
-We can also isolate the most up-regulated genes:
-
-```{r}
-subset(res_df, log2FoldChange > 20 & baseMean > 10 & padj < 0.05)
+# head: displays the first information
 ```
 
 To sum up the differential gene expression that occurs during genome elimination, we can use the summary function:
@@ -124,9 +109,31 @@ summary(res)
 
 Out of 16875 genes, we obtain 1172 (6.9%) up-regulated genes and 490 (2.9%) down-regulated genes.
 
-How could we acquire more information about these differentially expressed genes?
+Then, we can try to isolate significant up- or down-regulated genes.
 
-####Picking up analysis tools
+For instance, to isolate the most down-regulated genes with a significance threshold of 0.05, we can use the following subset function and we obtain 52 genes.
+
+```{r}
+subset(res_df, log2FoldChange < -20 & baseMean > 10 & padj < 0.05)
+#padj : adjusted p-value (significative blue dots)
+```
+
+We can also isolate the most up-regulated genes with a significance threshold of 0.05, and we obtain only 1 gene.
+
+```{r}
+subset(res_df, log2FoldChange > 20 & baseMean > 10 & padj < 0.05)
+```
+
+How could we acquire more information about these differentially expressed genes?
+We could, for instance, plot their expression profile and identify the protein domains associated with their transcripts.
+
+According to their expression profile, upregulated genes are mainly highly expressed after the genome elimination.
+Significatively downregulated genes are rather expressed in late stades.
+Those patterns reflects developmental processes, thus are of little interest for us.
+
+We can adjust the threshold of significance to study genes with lower p-value of differential expression.
+
+#### Discover some analysis tools
 
 Plot_counts function to display gene expression:
 
@@ -179,14 +186,14 @@ genes_annotation[1:15,]
 
 #### Analysis 1
 
-On cherche les gènes tel que leur expression différentielle soit significative, et qui sont uprégulés pendant l'élimination.
+We're looking for genes with a significative up-regulation during genome elimination.
 
 ```{r fig.height=14, fig.width=14}
 genes_list_1 = subset(res_df, padj < 0.005 & baseMean > 10 & log2FoldChange > 0)  %>% arrange (padj)
-# subset: on applique des filtres dans certaines colonnes pour recuperer seulement certains transcrits, on obtient l'objet gene_list_1
+# subset: filters are applied in certain columns to get only some transcripts and we obtain the object gene_list_1
 genes_list_1
 plot_counts(genes_list_1$gene_ID[1:40])
-#on affiche cet objet avec la fonction plot_counts
+# this object is showed with the plot_counts function
 ```
 
 ```{r fig.height=12, fig.width=12}
@@ -195,39 +202,39 @@ de_genes_with_annot_1 <- subset(genes_annotation, wbps_gene_id %in% genes_list_1
 de_genes_with_annot_1$wbps_gene_id <- factor(de_genes_with_annot_1$wbps_gene_id, levels = genes_list_1$gene_ID)
 
 de_genes_with_annot_1 <- de_genes_with_annot_1%>% arrange(wbps_gene_id)
-#de = differential expression
-#pour savoir a quoi notre subset de gènes correspond, on recupere dans notre grosse table d’annotation les genes qui sont dans notre liste
+# de = differential expression
+# to know what is this genes subset, we retrieve from the annotation table the genes corresponding to our subset
 de_genes_with_annot_1
 plot_counts(unique(de_genes_with_annot_1$wbps_gene_id)[1:40])
 ```
 
-Chercher par mot-clé de domaine protéique dans notre liste :
+To search by protein domains keywords in our genes subset:
 
 ```{r}
 toMatch = c("exonuclease", "transposase", "helicase", "DNase")
 exo_transpo_heli_de_genes = de_genes_with_annot_1[grep(paste(toMatch,collapse="|"), de_genes_with_annot_1$interpro_short_description, ignore.case = T),]
 
-#grep = cherche un pattern dans une chaîne de caractère
-#| : je cherche ou exonuclease, ou transposase, ou helicase
+# grep: looks for a pattern in a character chain
+# |: we're looking for either an exonuclease, a transposase, or a helicase
 
 exo_transpo_heli_de_genes
 
 plot_counts(unique(exo_transpo_heli_de_genes$wbps_gene_id))
 ```
 
-#### Analyse 2 : gènes downrégulés (faite par Quentin en live)
+#### Analysis 2 : down-regulated genes (done by Quentin)
 
-#### Analyse 3 : comparaison de l'expression différentielle entre 2 autres stades consécutifs VS le reste
+#### Analysis 3 : differential expression comparison between 2 other consecutive stages VS all the other stages
 
-##### 8cells + 8cells_5h vs all
+##### 8cells + 8cells_5h VS all
 
-######Build the DESeq2 object
+###### Build the DESeq2 object
 ```{r}
 dds2 <- DESeqDataSetFromTximport(txi.kallisto, sampleTable, ~ de_analysis )
 dds2 <- DESeq(dds2)
 vsd2 <- vst(dds2, blind=FALSE)
 ```
-######Plot
+###### Plot
 
 ```{r}
 res2 <- results(dds2)
@@ -244,9 +251,9 @@ plotMA(res2, ylim=c(-30,30))
 summary(res2)
 ```
 
-##### 2cells + 4cells vs all
+##### 2cells + 4cells VS all
 
-######Build the DESeq2 object
+###### Build the DESeq2 object
 
 ```{r}
 dds3 <- DESeqDataSetFromTximport(txi.kallisto, sampleTable, ~ de_analysis)
@@ -254,7 +261,7 @@ dds3 <- DESeq(dds3)
 vsd3 <- vst(dds3, blind=FALSE)
 ```
 
-######Plot
+###### Plot
 
 ```{r}
 res3 <- results(dds3)
