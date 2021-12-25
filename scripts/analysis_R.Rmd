@@ -127,12 +127,6 @@ subset(res_df, log2FoldChange > 20 & baseMean > 10 & padj < 0.05)
 How could we acquire more information about these differentially expressed genes?
 We could, for instance, plot their expression profile and identify the protein domains associated with their transcripts.
 
-According to their expression profile, upregulated genes are mainly highly expressed after the genome elimination.
-Significatively downregulated genes are rather expressed in late stades.
-Those patterns reflects developmental processes, thus are of little interest for us.
-
-We can adjust the threshold of significance to study genes with lower p-value of differential expression.
-
 #### Discover some analysis tools
 
 Plot_counts function to display gene expression:
@@ -186,7 +180,7 @@ genes_annotation[1:15,]
 
 #### Analysis 1
 
-We're looking for genes with a significative up-regulation during genome elimination.
+First, we're looking for genes with a significative up-regulation during genome elimination.
 
 ```{r fig.height=14, fig.width=14}
 genes_list_1 = subset(res_df, padj < 0.005 & baseMean > 10 & log2FoldChange > 0)  %>% arrange (padj)
@@ -195,6 +189,9 @@ genes_list_1
 plot_counts(genes_list_1$gene_ID[1:40])
 # this object is showed with the plot_counts function
 ```
+We isolate 349 significantly (p < 0.005) up-regulated different genes, sorted by increasing p-value (the first genes that are showed are the most significantly up-regulated during elimination). To further investigate them, we can search for the most significant of them on WormBase and see if they have orthologs in C.Elegans. Moreover, we can look for the effect of their know-down in C.Elegans.
+
+Now, we want to know what kind of proteins they are coding for. Thus, we cross our results with gene annotations from WormBase to obtain protein domains associated with the gene transcripts in M.Belari (and C.elegans).
 
 ```{r fig.height=12, fig.width=12}
 de_genes_with_annot_1 <- subset(genes_annotation, wbps_gene_id %in% genes_list_1$gene_ID)
@@ -208,7 +205,7 @@ de_genes_with_annot_1
 plot_counts(unique(de_genes_with_annot_1$wbps_gene_id)[1:40])
 ```
 
-To search by protein domains keywords in our genes subset:
+Since we're looking for proteins that could have an active role in genome elimination, we then filter the results (our genes subset) by using 4 protein domains keywords: exonuclease, transposase, helicase and DNase.
 
 ```{r}
 toMatch = c("exonuclease", "transposase", "helicase", "DNase")
@@ -221,14 +218,18 @@ exo_transpo_heli_de_genes
 
 plot_counts(unique(exo_transpo_heli_de_genes$wbps_gene_id))
 ```
+We obtain 9 genes that code for potentially interesting proteins during genome elimination. Thanks to the plot_counts function, we can see if their expression is strikingly up-regulated during elimination (4 cells and 8 cells stages) and null before and after elimination. Some of them would be particularly relevant to further investigate (e.g., knock-downing them to see if genome elimination is impaired), such as g25713, g27038 and g6879.
 
-#### Analysis 2 : down-regulated genes (done by Quentin)
+#### Analysis 2 : down-regulated genes
+
+Then, we've looked for genes with a significative down-regulation during genome elimination. This analysis has been conducted by Quentin.
 
 #### Analysis 3 : differential expression comparison between 2 other consecutive stages VS all the other stages
 
 ##### 8cells + 8cells_5h VS all
 
 ###### Build the DESeq2 object
+
 ```{r}
 dds2 <- DESeqDataSetFromTximport(txi.kallisto, sampleTable, ~ de_analysis )
 dds2 <- DESeq(dds2)
