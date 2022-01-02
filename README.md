@@ -27,37 +27,43 @@ This project is organized in 3 directories:
 
 ## Timeline of the analysis
 
-### Data download
+### Obtention of the count matrix
+
+#### Data download
 
 *See 2_data_download script.*
 Import of the raw sequencing data (fastq files) from the IGFL ftp (file transfer protocol).
 
-### Data renaming
+#### Data renaming
 
 *See 3_data_renaming script.*
  Fastq files moved in the data/fasq_files directory and renamed to refer clearly to a given sample (e.g., 8cells5h_rep2).
 
-### Data quality control
+#### Data quality control
  
 *See 4_data_quality_control script.*
 Use of the fastqc function to perfom a series of analyses on the raw data fastq files. Obtention of quality scores and GC content for each read. The results show that the data are of good quality (except at the very begining and at the end, thus reads will be cut and kept from 30pb to 80pb for further analysis) and that the GC content display a multimodal distribution (surprizing, but will not prevent from conducting further analysis).
 
-### Data trimming
+#### Data trimming
 
 *See 5_data_trimming script.*
-Based on the quality analysis report, deletion of the low quality parts of the reads: reads are cut and kept from 30pb to 80pb.
+Based on the quality analysis report, deletion of the low quality parts of the reads; reads are cut and kept from 30pb to 80pb.
 
-### Index building
+#### Index building
 
 *See 6_index_building script.*
 Import of the annotated *M.belari* Coding DNA Sequences (CDS) from WormBase Parasite to build a transcription index, which will be used for the pseudomapping of the samples reads.
 
-### Quantification running
+#### Quantification running
 
 *See 7_quantification_running and 8_aggregation_reports scripts.*
-Use of Kallisto to pseudomap the trimmed data on the *M.belari* index (single ead reads). Length of 552 and Standard Deviation of 200 were chosen based on the IGFL Illumina data sequencing report.
-Aggregation of all the pseudomapping data into one file
+Use of Kallisto to pseudomap the trimmed reads on the *M.belari* index (single ead reads). Fragment length of 552 and Standard Deviation of 200 were chosen based on the IGFL Illumina data sequencing report.
 
-to map the clean reads to the M.belari index to create a compte table.
+Aggregation of all the pseudomapping data into one file using multiqc. Surprisingly, the results show a low pseudomapping ratio (around 25%), that could be explained by non-optimal Kallisto parameters or the sequencing or rRNA instead of mRNA only.
 
-"The aggregating report revealed a low mapping ratio (less than 30%). Hypotheses such as contamination, scarcely annotated genome were ruled out. There is a possibility that the Kallisto parameters (mean fragment length and standard deviation) might impact the mapping ratio."
+Obtention of the count matrix (table that reports, for each sample, the number of fragments that have been assigned to each gene) to detect differentially expressed genes. 
+
+### Analysis of the count matrix
+
+Import of the quantification data into R using tximport.
+See *analysis_R.Rmd* to read the details concerning the method and results of the count matrix analyses.
