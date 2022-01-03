@@ -67,3 +67,4 @@ Obtention of the count matrix (table that reports, for each sample, the number o
 
 Import of the quantification data into R using tximport.
 See *analysis_R.Rmd* to read the details concerning the method and results of the count matrix analyses.
+To sum up, a principal component analysis (PCA) was conducted to check the data quality, genes with significant down- or up-regulation during genome elimination or similar expression patterns were identified, and their interactions were analysed using the "string" database.
